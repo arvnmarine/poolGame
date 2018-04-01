@@ -3,42 +3,77 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class Chat : NetworkBehaviour {
+public class Chat : MonoBehaviour {
 
-    public List<string> chatList = new List<string>();
+
     private string curMess;
+    public List<string> chatList = new List<string>();
+    public GameObject playerPointer;
+
+    private void Start()
+    {
+        //Debug.Log(isLocalPlayer);
+        //Debug.Log(isServer);
+    }
 
     
+
+
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (chatList.Count > 5)
+        {
+            chatList.RemoveAt(0);
+        }
+    }
+
+
     private void OnGUI()
     {
-        GUILayout.BeginHorizontal(GUILayout.Width(250));
-        curMess = GUILayout.TextField(curMess);
-        if (GUILayout.Button("Send"))
+       
+
+       
+        
+
+        using (var areaScope = new GUILayout.AreaScope(new Rect(Screen.width - 130, 10, 100, 1000)))
         {
-            if (!string.IsNullOrEmpty(curMess.Trim()))
+            
+
+             
+                curMess = GUILayout.TextField(curMess);
+
+
+
+                if (GUILayout.Button("Send"))
+                {
+                    if (!string.IsNullOrEmpty(curMess.Trim()))
+                    {
+
+
+                        playerPointer.GetComponent<PlayerNetworkHook>().CmdChatMess_clientToServer(curMess);
+
+                        curMess = string.Empty;
+                    }
+                }
+
+            
+
+                
+
+            
+            
+
+            foreach (string st in chatList)
             {
-                CmdChatMess_clientToServer(curMess);
-                curMess = string.Empty;
+                GUILayout.Label(st);
             }
         }
-        GUILayout.EndHorizontal();
-        foreach (string st in chatList)
-        {
-            GUILayout.Label(st);
-        }
-    }
-    
-    [Command]
-    public void CmdChatMess_clientToServer(string mess)
-    {
-        RpcChatMess_serverToAllClient(mess);
+
+        
     }
     
     
-    [ClientRpc]
-    public void RpcChatMess_serverToAllClient(string mess)
-    {
-        chatList.Add(mess);
-    }
     
 }

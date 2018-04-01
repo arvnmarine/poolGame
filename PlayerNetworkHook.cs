@@ -5,30 +5,48 @@ using UnityEngine.Networking;
 
 public class PlayerNetworkHook : NetworkBehaviour {
 
-
+    public GameObject chatPointer;
     
-	// Use this for initialization
-	void Start () {
-		if (!isLocalPlayer)
+    
+    // Use this for initialization
+    void Start () {
+        chatPointer = GameObject.Find("chatMemory");
+        if (!isLocalPlayer)
         {
-            //return;
+            return;
             
         } else
         {
+            chatPointer.GetComponent<Chat>().playerPointer = this.gameObject;
             this.GetComponent<Camera>().enabled = true;
             this.GetComponent<MouseLook>().enabled = true;
             this.GetComponent<Move>().enabled = true;
             this.GetComponent<CharacterController>().enabled = true;
-            
+
         }
+        Debug.Log(isLocalPlayer);
+
 	}
 
     void OnConnectedToServer()
     {
     }
 
-        // Update is called once per frame
-        void Update () {
-		
-	}
+
+
+    [Command]
+    public void CmdChatMess_clientToServer(string mess)
+    {
+        Debug.Log("server received");
+        RpcChatMess_serverToAllClient(mess);
+    }
+
+
+    [ClientRpc]
+    public void RpcChatMess_serverToAllClient(string mess)
+    {
+        Debug.Log("client received");
+        
+        chatPointer.GetComponent<Chat>().chatList.Add(mess);
+    }
 }
